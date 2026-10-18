@@ -1,0 +1,67 @@
+---
+title: "p8105_hw3_nel2139"
+author: "Nicole Lewis"
+date: "2026-10-15"
+output: github_document
+---
+
+```{r setup, include = FALSE}
+library(tidyverse)
+library(ggridges)
+library(patchwork)
+library(p8105.datasets)
+
+
+knitr::opts_chunk$set(
+  fig.width = 6, 
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis", 
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+
+```
+
+## Problem 1 
+
+Load dataset 
+
+```{r}
+data("ny_noaa")
+ny_noaa
+
+n_stations = 
+  ny_noaa |>
+  summarize(n_stations = n_distinct(id))
+
+ny_noaa |> 
+  mutate(
+    tmax = as.numeric(tmax),
+    tmin = as.numeric(tmin)) |> 
+  pivot_longer(
+    prcp:tmin,
+    names_to = "variable",
+    values_to = "value") |> 
+  group_by(variable) |> 
+  summarize(
+    n_obs = n(),
+    n_missing = sum(is.na(value)),
+    pct_missing = n_missing / n_obs * 100) |> 
+  knitr::kable(digits = 1)
+    
+  
+```
+
+The `ny_noaa` dataset contains daily weather data for all New York State weather stations from January 1, 1981 to December 31, 2010, from NOAA's GHCN-Daily database. It has `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns, where each row represents one day of observations at one weather station. The data include observations from `r n_stations` different weather stations. The dataset includes the following variables: `id` (weather station ID), `date` (date of observation), `prcp` (precipitation, in tenths of mm), `snow` (snowfall, in mm), `snwd` (snow depth, in mm), `tmax` (maximum temperature, in tenths of degrees C), and `tmin` (minimum temperature, in tenths of degrees C). 
+
+Missing data is a significant issue in this dataset. Precipitation (`prcp`) is the most complete variable, with only 5.6% of values missing, followed by snowfall (`snow`) (14.7% missing) and snow depth (`snwd`) (22.8% missing). Temperature has the most missing data, with 43.7% of both maximum (`tmax`) and minimum (`tmin`) temperature values missing.
+
