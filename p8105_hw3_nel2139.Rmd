@@ -38,7 +38,11 @@ Load dataset
 ```{r}
 data("ny_noaa")
 ny_noaa
+```
 
+Data prep for summary 
+
+```{r}
 n_stations = 
   ny_noaa |>
   summarize(n_stations = n_distinct(id))
@@ -57,11 +61,38 @@ ny_noaa |>
     n_missing = sum(is.na(value)),
     pct_missing = n_missing / n_obs * 100) |> 
   knitr::kable(digits = 1)
-    
-  
 ```
 
 The `ny_noaa` dataset contains daily weather data for all New York State weather stations from January 1, 1981 to December 31, 2010, from NOAA's GHCN-Daily database. It has `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns, where each row represents one day of observations at one weather station. The data include observations from `r n_stations` different weather stations. The dataset includes the following variables: `id` (weather station ID), `date` (date of observation), `prcp` (precipitation, in tenths of mm), `snow` (snowfall, in mm), `snwd` (snow depth, in mm), `tmax` (maximum temperature, in tenths of degrees C), and `tmin` (minimum temperature, in tenths of degrees C). 
 
 Missing data is a significant issue in this dataset. Precipitation (`prcp`) is the most complete variable, with only 5.6% of values missing, followed by snowfall (`snow`) (14.7% missing) and snow depth (`snwd`) (22.8% missing). Temperature has the most missing data, with 43.7% of both maximum (`tmax`) and minimum (`tmin`) temperature values missing.
 
+
+Data cleaning 
+
+```{r}
+data("ny_noaa")
+ny_noaa = 
+  ny_noaa |>
+  mutate(
+    tmax = as.numeric(tmax) / 10, 
+    tmin = as.numeric(tmin) / 10, 
+    prcp = prcp / 10) |> 
+  separate(date, into = c("year", "month", "day"), sep = "-") |> 
+  mutate(
+    year = as.numeric(year), 
+    month = as.numeric(month),
+    day = as.numeric(day)
+  )
+
+ny_noaa |> 
+  drop_na(snow) |> 
+  count(snow, name = "n_obs") |> 
+  filter(min_rank(desc(n_obs)) <= 5) |> 
+  arrange(desc(n_obs)) |> 
+  knitr::kable()
+```
+
+In the cleaning process, the date variable was split into 3 separate variables; `year`, `month`, and `day` and converted from character to numeric variables so they can be easily filtered, grouped and plotted. This added 2 more columns so the dataset has `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns, where each row represents one day of observations at one weather station. Maximum and minimum temperature variables were originally stored as character variables in tenths of degrees Celsius and were converted to numeric and divided by 10 so the units are now in degrees Celsius. Precipitation was converted from tenths of millimeters to millimeters to maintain consistency with the snow fall and snow depth variable units.  
+
+After removing missing values, the most commonly observed snowfall value is 0 mm (2,008,508 observations). This makes sense given that the dataset includes observations for every day of the year, but snow typically falls during the winter months in New York. Even during the winter, many days have no snowfall, so it is reasonable for a large number of days to have 0 mm of snow. The next most common values are 25 mm of snow (31,022 observations), 13 mm (23,095 observations), 51 mm (18,274) and 76 mm (10,173). This pattern may reflect how snowfall is typically measured in the United States, including New York, which uses the imperial system, where measurements are recorded in inches. To convert inches to millimeters, the number of inches is multiplied by 25.4 (since 1 inch = 25.4 mm) and rounded to the nearest whole millimeter, which may cause many measurements to end up at the same few values. Notably, the most frequently observed values of 25, 13, 51, and 76 mm correspond approximately to 1, 0.5, 2, and 3 inches, respectively. These rounding and conversion practices may explain why observations cluster at these specific values.
