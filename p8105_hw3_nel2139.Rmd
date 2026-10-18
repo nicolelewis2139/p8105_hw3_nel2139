@@ -10,7 +10,7 @@ library(tidyverse)
 library(ggridges)
 library(patchwork)
 library(p8105.datasets)
-
+library(viridis)
 
 knitr::opts_chunk$set(
   fig.width = 6, 
@@ -96,3 +96,34 @@ ny_noaa |>
 In the cleaning process, the date variable was split into 3 separate variables; `year`, `month`, and `day` and converted from character to numeric variables so they can be easily filtered, grouped and plotted. This added 2 more columns so the dataset has `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns, where each row represents one day of observations at one weather station. Maximum and minimum temperature variables were originally stored as character variables in tenths of degrees Celsius and were converted to numeric and divided by 10 so the units are now in degrees Celsius. Precipitation was converted from tenths of millimeters to millimeters to maintain consistency with the snow fall and snow depth variable units.  
 
 After removing missing values, the most commonly observed snowfall value is 0 mm (2,008,508 observations). This makes sense given that the dataset includes observations for every day of the year, but snow typically falls during the winter months in New York. Even during the winter, many days have no snowfall, so it is reasonable for a large number of days to have 0 mm of snow. The next most common values are 25 mm of snow (31,022 observations), 13 mm (23,095 observations), 51 mm (18,274) and 76 mm (10,173). This pattern may reflect how snowfall is typically measured in the United States, including New York, which uses the imperial system, where measurements are recorded in inches. To convert inches to millimeters, the number of inches is multiplied by 25.4 (since 1 inch = 25.4 mm) and rounded to the nearest whole millimeter, which may cause many measurements to end up at the same few values. Notably, the most frequently observed values of 25, 13, 51, and 76 mm correspond approximately to 1, 0.5, 2, and 3 inches, respectively. These rounding and conversion practices may explain why observations cluster at these specific values.
+
+Two-panel plot
+
+```{r, message = FALSE, fig.width = 9, dpi = 300}
+ny_noaa |> 
+  drop_na(tmax) |>  
+  select(id, year, month, tmax) |> 
+  filter(month == 1 | month == 7) |> 
+  group_by(id, year, month) |> 
+  summarize(mean_tmax = mean(tmax)) |> 
+  mutate(
+    month = case_when(
+      month == 1 ~ "January",
+      month == 7 ~ "July")
+  ) |> 
+  ggplot(aes(x = year, y = mean_tmax)) +
+  geom_point(aes(color = id), alpha = .5) +
+  geom_smooth(se = FALSE) +
+  facet_grid(~month) + 
+  labs(
+    title = "Average January and July max temperature by station",
+    x = "Year",
+    y = "Average maximum temperature (ºC)",
+    caption = "Data from the rnoaa package. Each point is one station's monthly average."
+  ) +
+  theme(legend.position = "none")
+
+```
+
+Average maximum temperatures were much higher in July than in January. January temperatures fluctuated considerably from year to year, ranging mostly from about -10 to 10ºC, while July temperatures remained relatively stable around 26ºC across the 30-year period. Within each year, stations tended to rise and fall together, suggesting that warmer or colder months affected the whole state. A few outliers stood out, most notably one station in July around 1988 with an average maximum temperature of about 14ºC, well below all other stations that month. Other outliers included a July value of about 18ºC around 2004 and January values near -13ºC around 1982 and -12ºC around 2005. 
+
