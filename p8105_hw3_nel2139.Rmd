@@ -130,7 +130,7 @@ Average maximum temperatures were much higher in July than in January. January t
 
 `tmax` vs `tmin` and snowball two-panel plot
 
-```{r, message = FALSE, fig.width = 12, fig.asp = .6, out.width = "100%"}
+```{r, message = FALSE, fig.width = 9, fig.asp = .6, out.width = "100%"}
 
 ggp_tmax_tmin = 
   ny_noaa |> 
@@ -236,4 +236,27 @@ demo_df |>
 ```
 
 Among those with less than high school education, males and females had similar distributions, though men showed two distinct peaks (around 46 and 71), while females showed a very slight peak around age 45 and a more pronounced peak around age 69. Among those with a high school equivalent education, males showed two peaks around ages 30 and 60, while females had a more pronounced peak around age 73. Among those with more than high school education, males and females had similar age distributions, both showing a pronounced peak around age 33 and a smaller peak around age 62, although the female peak around age 33 was noticeably higher. Overall, individuals with more than high school education tended to be younger, while those with less than high school or high school equivalent education had greater concentrations at older ages, particularly among women. 
+
+Total activity 
+
+```{r}
+nhanes_df |> 
+  group_by(seqn, sex, age, education) |> 
+  summarize(total_activity = sum(mims)) |> 
+  ggplot(aes(x = age, y = total_activity, color = sex)) +
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) +
+  facet_grid(~education) +
+  labs(
+    title = "Total activity plot", 
+    x = "Age in years", 
+    y = "Total activity (MIMS)",
+    color = "Sex"
+  )
+  
+```
+
+
+Total activity generally declined as age increased for both men and women across all education levels. Among those with less than a high school education, men and women followed a similar downward trend, with the steepest decline after age 60. In the high school equivalent group, activity rose until around age 40 and then declined steeply until about age 60, after which it leveled off, though women showed a small increase around age 70. Among those with more than a high school education, activity remained fairly stable until about age 60 before declining gradually, and this decline was less steep than in the other education groups. Women were generally more active than men across all education levels, except around ages 50-80 in the less than high school group, where men were more active. Participants with less than a high school education were among the most active at younger ages but declined the most with age, while women with more than a high school education maintained relatively high activity into older age.
+
 
