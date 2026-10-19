@@ -166,3 +166,48 @@ ggp_tmax_tmin + ggp_snow
 A hexbin plot (left) was used to graph `tmax` vs `tmin` as the dataset contains a large number of observations which would cause substantial overlap in a scatterplot. By grouping observations into hexagons and using colour to represent their frequency, the hexbin plot makes it easier to identify patterns and areas of high concentration. The plot shows a strong positive relationship between maximum and minimum daily temperatures, where days with higher maximum temperatures also tended to have higher minimum temperatures. Most observations fell within a diagonal pattern ranging from maximum temperatures of about 0 to 30ºC and minimum temperatures of about -5 to 20ºC. A few isolated hexagons are also visible, representing less common temperature combinations. Examples of these include a maximum temperature value around 60ºC and minimum temperature values around 60ºC and -60ºC, which are unrealistic for New York weather conditions. A ridge plot (right) was used to show the distribution of snowfall values between 0 and 100 mm for each year, as it allows the shape of the distribution to be compared across all 30 years. The distributions are fairly similar from 1981 to 2010, with most snowfall amounts below 30 mm and distinct peaks around 13, 25, 51, and 76 mm, which correspond to about 0.5, 1, 2, and 3 inches. In the most recent years (around 2006-2010), the peak near 10 mm was more pronounced while the 25 mm peak was smaller, suggesting that smaller snowfall amounts were more often recorded in those years. 
 
 
+## Problem 2
+
+Load demographic and accelertor datasets and create combined dataset 
+
+```{r}
+demo_df = 
+  read_csv("./data/nhanes_covar.csv", na = c("NA"), skip = 4) |> 
+  janitor::clean_names() |> 
+  filter(age >= 21) |> 
+  drop_na() |> 
+  mutate(sex = recode(sex, `1` = "male", `2` = "female"),
+         sex = factor(sex, levels = c("male", "female")),
+         education = recode(
+           education, 
+           `1` = "less than high school",
+           `2` = "high school equivalent",
+           `3` = "more than high school"),
+         education = factor(
+           education, 
+           levels = c("less than high school", "high school equivalent", "more than high school")
+         ))
+
+accel_df = 
+  read_csv("./data/nhanes_accel.csv") |> 
+  janitor::clean_names() |> 
+  pivot_longer(
+    min1:min1440,
+    names_to = "minute", 
+    names_prefix = "min",
+    values_to = "mims"
+  ) |> 
+  mutate(minute = as.numeric(minute))
+
+nhanes_df = left_join(demo_df, accel_df, by = "seqn")
+
+```
+
+
+
+
+
+
+
+
+
