@@ -216,10 +216,24 @@ demo_df |>
   knitr::kable(col.names = c("Education", "Men", "Women"))
 ```
 
+Majority of participants had more than a high school education (115 of 228). The number of men and women was nearly equal in all education levels except for the high school equivalent group, which had more men than women (35 vs. 23). 
 
 
+Age distributions for men and women in each education category 
 
+```{r}
+demo_df |> 
+  ggplot(aes(x = age, fill = sex)) +
+  geom_density(alpha = .5) + 
+  facet_grid(~education) +
+  scale_x_continuous(limits = c(0, 100)) +
+  labs(
+    title = "Age distribution by sex and education level", 
+    x = "Age in years",
+    y = "Density", 
+    fill = "Sex"
+  ) 
+```
 
-
-
+Among those with less than high school education, males and females had similar distributions, though men showed two distinct peaks (around 46 and 71), while females showed a very slight peak around age 45 and a more pronounced peak around age 69. Among those with a high school equivalent education, males showed two peaks around ages 30 and 60, while females had a more pronounced peak around age 73. Among those with more than high school education, males and females had similar age distributions, both showing a pronounced peak around age 33 and a smaller peak around age 62, although the female peak around age 33 was noticeably higher. Overall, individuals with more than high school education tended to be younger, while those with less than high school or high school equivalent education had greater concentrations at older ages, particularly among women. 
 
