@@ -15,7 +15,8 @@ library(viridis)
 knitr::opts_chunk$set(
   fig.width = 6, 
   fig.asp = .6,
-  out.width = "90%"
+  out.width = "90%",
+  dpi = 300
 )
 
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
@@ -97,9 +98,9 @@ In the cleaning process, the date variable was split into 3 separate variables; 
 
 After removing missing values, the most commonly observed snowfall value is 0 mm (2,008,508 observations). This makes sense given that the dataset includes observations for every day of the year, but snow typically falls during the winter months in New York. Even during the winter, many days have no snowfall, so it is reasonable for a large number of days to have 0 mm of snow. The next most common values are 25 mm of snow (31,022 observations), 13 mm (23,095 observations), 51 mm (18,274) and 76 mm (10,173). This pattern may reflect how snowfall is typically measured in the United States, including New York, which uses the imperial system, where measurements are recorded in inches. To convert inches to millimeters, the number of inches is multiplied by 25.4 (since 1 inch = 25.4 mm) and rounded to the nearest whole millimeter, which may cause many measurements to end up at the same few values. Notably, the most frequently observed values of 25, 13, 51, and 76 mm correspond approximately to 1, 0.5, 2, and 3 inches, respectively. These rounding and conversion practices may explain why observations cluster at these specific values.
 
-Two-panel plot
+`tmax` two-panel plot
 
-```{r, message = FALSE, fig.width = 9, dpi = 300}
+```{r, message = FALSE, fig.width = 9}
 ny_noaa |> 
   drop_na(tmax) |>  
   select(id, year, month, tmax) |> 
@@ -126,4 +127,42 @@ ny_noaa |>
 ```
 
 Average maximum temperatures were much higher in July than in January. January temperatures fluctuated considerably from year to year, ranging mostly from about -10 to 10ºC, while July temperatures remained relatively stable around 26ºC across the 30-year period. Within each year, stations tended to rise and fall together, suggesting that warmer or colder months affected the whole state. A few outliers stood out, most notably one station in July around 1988 with an average maximum temperature of about 14ºC, well below all other stations that month. Other outliers included a July value of about 18ºC around 2004 and January values near -13ºC around 1982 and -12ºC around 2005. 
+
+`tmax` vs `tmin` and snowball two-panel plot
+
+```{r, message = FALSE, fig.width = 12, fig.asp = .6, out.width = "100%"}
+
+ggp_tmax_tmin = 
+  ny_noaa |> 
+  drop_na(tmax, tmin) |> 
+  ggplot(aes(x = tmax, y = tmin)) + 
+  geom_hex() +
+  viridis::scale_fill_viridis(breaks = c(10000, 30000, 50000)) + 
+  labs(
+    title = "Maximum vs minimum temperature",
+    x = "Maximum daily temperature (ºC)",
+    y = "Minimum daily temperature (ºC)", 
+    fill = "Number of observations"
+  ) 
+
+ggp_snow = 
+  ny_noaa |> 
+  drop_na(snow) |> 
+  filter(snow > 0, snow < 100) |> 
+  mutate(year = factor(year)) |> 
+  ggplot(aes(x = snow, y = year)) + 
+  geom_density_ridges(scale = .85) + 
+  labs(
+    title = "Snowfall distribution by year",
+    x = "Snowfall (mm)",
+    y = "Year") +
+  scale_x_continuous(
+    breaks = c(0, 25, 50, 75, 100)
+  )
+
+ggp_tmax_tmin + ggp_snow
+```
+
+A hexbin plot (left) was used to graph `tmax` vs `tmin` as the dataset contains a large number of observations which would cause substantial overlap in a scatterplot. By grouping observations into hexagons and using colour to represent their frequency, the hexbin plot makes it easier to identify patterns and areas of high concentration. The plot shows a strong positive relationship between maximum and minimum daily temperatures, where days with higher maximum temperatures also tended to have higher minimum temperatures. Most observations fell within a diagonal pattern ranging from maximum temperatures of about 0 to 30ºC and minimum temperatures of about -5 to 20ºC. A few isolated hexagons are also visible, representing less common temperature combinations. Examples of these include a maximum temperature value around 60ºC and minimum temperature values around 60ºC and -60ºC, which are unrealistic for New York weather conditions. A ridge plot (right) was used to show the distribution of snowfall values between 0 and 100 mm for each year, as it allows the shape of the distribution to be compared across all 30 years. The distributions are fairly similar from 1981 to 2010, with most snowfall amounts below 30 mm and distinct peaks around 13, 25, 51, and 76 mm, which correspond to about 0.5, 1, 2, and 3 inches. In the most recent years (around 2006-2010), the peak near 10 mm was more pronounced while the 25 mm peak was smaller, suggesting that smaller snowfall amounts were more often recorded in those years. 
+
 
