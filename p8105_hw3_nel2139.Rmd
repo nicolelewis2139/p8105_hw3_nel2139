@@ -203,6 +203,18 @@ nhanes_df = left_join(demo_df, accel_df, by = "seqn")
 
 ```
 
+Table of men and women in each education category 
+
+```{r, message = FALSE}
+demo_df |> 
+  group_by(education, sex) |> 
+  summarize(n_obs = n()) |> 
+  pivot_wider(
+    names_from = sex,
+    values_from = n_obs
+  ) |> 
+  knitr::kable(col.names = c("Education", "Men", "Women"))
+```
 
 
 
