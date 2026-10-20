@@ -94,7 +94,7 @@ ny_noaa |>
   knitr::kable()
 ```
 
-In the cleaning process, the date variable was split into 3 separate variables; `year`, `month`, and `day` and converted from character to numeric variables so they can be easily filtered, grouped and plotted. This added 2 more columns so the dataset has `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns, where each row represents one day of observations at one weather station. Maximum and minimum temperature variables were originally stored as character variables in tenths of degrees Celsius and were converted to numeric and divided by 10 so the units are now in degrees Celsius. Precipitation was converted from tenths of millimeters to millimeters to maintain consistency with the snow fall and snow depth variable units.  
+In the cleaning process, the date variable was split into 3 separate variables: `year`, `month`, and `day` and converted from character to numeric variables so they can be easily filtered, grouped and plotted. This added 2 more columns so the dataset has `r nrow(ny_noaa)` rows and `r ncol(ny_noaa)` columns, where each row represents one day of observations at one weather station. Maximum and minimum temperature variables were originally stored as character variables in tenths of degrees Celsius and were converted to numeric and divided by 10 so the units are now in degrees Celsius. Precipitation was converted from tenths of millimeters to millimeters to maintain consistency with the snowfall and snow depth variable units.  
 
 After removing missing values, the most commonly observed snowfall value is 0 mm (2,008,508 observations). This makes sense given that the dataset includes observations for every day of the year, but snow typically falls during the winter months in New York. Even during the winter, many days have no snowfall, so it is reasonable for a large number of days to have 0 mm of snow. The next most common values are 25 mm of snow (31,022 observations), 13 mm (23,095 observations), 51 mm (18,274) and 76 mm (10,173). This pattern may reflect how snowfall is typically measured in the United States, including New York, which uses the imperial system, where measurements are recorded in inches. To convert inches to millimeters, the number of inches is multiplied by 25.4 (since 1 inch = 25.4 mm) and rounded to the nearest whole millimeter, which may cause many measurements to end up at the same few values. Notably, the most frequently observed values of 25, 13, 51, and 76 mm correspond approximately to 1, 0.5, 2, and 3 inches, respectively. These rounding and conversion practices may explain why observations cluster at these specific values.
 
@@ -128,7 +128,7 @@ ny_noaa |>
 
 Average maximum temperatures were much higher in July than in January. January temperatures fluctuated considerably from year to year, ranging mostly from about -10 to 10ºC, while July temperatures remained relatively stable around 26ºC across the 30-year period. Within each year, stations tended to rise and fall together, suggesting that warmer or colder months affected the whole state. A few outliers stood out, most notably one station in July around 1988 with an average maximum temperature of about 14ºC, well below all other stations that month. Other outliers included a July value of about 18ºC around 2004 and January values near -13ºC around 1982 and -12ºC around 2005. 
 
-`tmax` vs `tmin` and snowball two-panel plot
+`tmax` vs `tmin` and snowfall two-panel plot
 
 ```{r, message = FALSE, fig.width = 9, fig.asp = .6, out.width = "100%"}
 
@@ -168,9 +168,9 @@ A hexbin plot (left) was used to graph `tmax` vs `tmin` as the dataset contains 
 
 ## Problem 2
 
-Load demographic and accelertor datasets and create combined dataset 
+Load demographic and accelerometer datasets and create combined dataset 
 
-```{r}
+```{r, message = FALSE}
 demo_df = 
   read_csv("./data/nhanes_covar.csv", na = c("NA"), skip = 4) |> 
   janitor::clean_names() |> 
@@ -237,9 +237,9 @@ demo_df |>
 
 Among those with less than high school education, males and females had similar distributions, though men showed two distinct peaks (around 46 and 71), while females showed a very slight peak around age 45 and a more pronounced peak around age 69. Among those with a high school equivalent education, males showed two peaks around ages 30 and 60, while females had a more pronounced peak around age 73. Among those with more than high school education, males and females had similar age distributions, both showing a pronounced peak around age 33 and a smaller peak around age 62, although the female peak around age 33 was noticeably higher. Overall, individuals with more than high school education tended to be younger, while those with less than high school or high school equivalent education had greater concentrations at older ages, particularly among women. 
 
-Total activity 
+Total activity plot 
 
-```{r}
+```{r, message = FALSE}
 nhanes_df |> 
   group_by(seqn, sex, age, education) |> 
   summarize(total_activity = sum(mims)) |> 
@@ -248,7 +248,7 @@ nhanes_df |>
   geom_smooth(se = FALSE) +
   facet_grid(~education) +
   labs(
-    title = "Total activity plot", 
+    title = "Total activity plot by age, sex, and education", 
     x = "Age in years", 
     y = "Total activity (MIMS)",
     color = "Sex"
@@ -282,7 +282,7 @@ nhanes_df |>
     caption = "Hour 0 = midnight")
 ```
 
-Both sexes followed a similar daily pattern across all three education groups. Activity was lowest overnight (hours 2-5, or 2-5am), rose sharply between hours 5 and 10 (5-10am), stayed high from about hour 10 to 19 (10am-7pm), and declined from hour 19 to 24 (7pm-midnight). In the less than high school group, activity peaked around hours 10–11 (10-11am), and men and women had nearly identical patterns. In the other two groups, activity stayed fairly level through the day, and women were slightly more active than men, with the largest difference in the more than high school group. Overall, daily activity patterns were similar across groups, with sex differences becoming more noticeable at higher education levels.
+Both sexes followed a similar daily pattern across all three education groups. Activity was lowest overnight (hours 2-5, or 2-5am), increased between hours 5 and 10 (5-10am), stayed high throughout the day, and declined from hours 19 to 24 (7pm-midnight). In the less than high school group, activity peaked around hours 10-11 (10-11am), and then declined gradually through the afternoon, and men and women had nearly identical patterns. In the other two groups, activity stayed fairly consistent through the day from hours 10 to 18 (10am-6pm) and women were slightly more active than men, with the largest difference in the more than high school group. Overall, daily activity patterns were similar across groups, with sex differences becoming more noticeable at higher education levels.
 
 
 ## Problem 3
@@ -327,7 +327,7 @@ The combined Citi Bike dataset (`citi_df`) contains `r nrow(citi_df)` rows and `
 
 Table of total rides by year, month and rider 
 
-```{r}
+```{r, message = FALSE}
 citi_df |> 
   group_by(year, month, member_casual) |> 
   summarize(n_rides = n()) |> 
@@ -380,7 +380,7 @@ Median ride duration was longer in July than in January in both years, likely be
 citi_df |> 
   filter(year == "2024") |> 
   ggplot(aes(x = rideable_type, y = duration, fill = member_casual)) + 
-  geom_boxplot(alpha = .5, linewidth = .2) +
+  geom_boxplot(alpha = .5, linewidth = .2, outlier.size = 1) +
   facet_grid(~month) +
   labs(
     title = "Citi Bike ride duration in 2024",
@@ -388,11 +388,7 @@ citi_df |>
     y = "Ride duration (minutes)", 
     fill = "Membership status"
   )
-  
-citi_df |> 
-  filter(year == "2024") |> 
-  group_by(month, member_casual, rideable_type) |> 
-  summarize(median_duration = median(duration))
+
 ```
 
 In 2024, casual riders generally took longer rides than members, especially on classic bikes. In January, the median classic bike ride lasted about 12.7 minutes for casual riders compared to 7.3 minutes for members, and in July, it lasted about 15.6 minutes for casual riders compared to 7.7 minutes for members. Casual riders took longer rides in July than in January, while members’ ride duration stayed fairly similar across months. Among casual riders, median ride duration was longer for classic bikes than for electric bikes, however, among members, median ride duration was slightly longer for electric bikes than for classic bikes, especially in July. Across all months, membership statuses, and bike types, ride duration was right-skewed, with most rides lasting under about 25 minutes. There were also many outliers representing unusually long rides, particularly in July, with some rides exceeding 200 minutes.
