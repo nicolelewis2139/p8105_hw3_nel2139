@@ -374,4 +374,27 @@ citi_df |>
 
 Median ride duration was longer in July than in January in both years, likely because of the warmer weather. Rides were also longer in 2020 than in 2024, and this gap between years was much larger in July, where median ride duration was about 4-6 minutes longer in 2020 than in 2024, compared to about 1-2 minutes longer in January. In July of both years, median ride duration dropped slightly on Friday and then increased on Saturday and Sunday, with weekend rides having the longest median duration of the week. In January 2020, median ride duration stayed fairly stable throughout the week and increased on the weekend, while in January 2024, duration increased slightly through Saturday before dropping on Sunday.
 
+2024 ride duration distribution by month, membership status, and bike type
+
+```{r}
+citi_df |> 
+  filter(year == "2024") |> 
+  ggplot(aes(x = rideable_type, y = duration, fill = member_casual)) + 
+  geom_boxplot(alpha = .5, linewidth = .2) +
+  facet_grid(~month) +
+  labs(
+    title = "Citi Bike ride duration in 2024",
+    x = "Bike type",
+    y = "Ride duration (minutes)", 
+    fill = "Membership status"
+  )
+  
+citi_df |> 
+  filter(year == "2024") |> 
+  group_by(month, member_casual, rideable_type) |> 
+  summarize(median_duration = median(duration))
+```
+
+In 2024, casual riders generally took longer rides than members, especially on classic bikes. In January, the median classic bike ride lasted about 12.7 minutes for casual riders compared to 7.3 minutes for members, and in July, it lasted about 15.6 minutes for casual riders compared to 7.7 minutes for members. Casual riders took longer rides in July than in January, while members’ ride duration stayed fairly similar across months. Among casual riders, median ride duration was longer for classic bikes than for electric bikes, however, among members, median ride duration was slightly longer for electric bikes than for classic bikes, especially in July. Across all months, membership statuses, and bike types, ride duration was right-skewed, with most rides lasting under about 25 minutes. There were also many outliers representing unusually long rides, particularly in July, with some rides exceeding 200 minutes.
+
 
