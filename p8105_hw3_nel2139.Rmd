@@ -256,7 +256,33 @@ nhanes_df |>
   
 ```
 
-
 Total activity generally declined as age increased for both men and women across all education levels. Among those with less than a high school education, men and women followed a similar downward trend, with the steepest decline after age 60. In the high school equivalent group, activity rose until around age 40 and then declined steeply until about age 60, after which it leveled off, though women showed a small increase around age 70. Among those with more than a high school education, activity remained fairly stable until about age 60 before declining gradually, and this decline was less steep than in the other education groups. Women were generally more active than men across all education levels, except around ages 50-80 in the less than high school group, where men were more active. Participants with less than a high school education were among the most active at younger ages but declined the most with age, while women with more than a high school education maintained relatively high activity into older age.
+
+24-hour activity time course
+
+```{r, message = FALSE, warning = FALSE, fig.width = 7}
+nhanes_df |> 
+  mutate(hour = floor((minute - 1) / 60)) |> 
+  group_by(seqn, education, sex, hour) |> 
+  summarize(hourly_mims = sum(mims)) |> 
+  ggplot(aes(x = hour, y = hourly_mims)) +
+  geom_point(aes(color = sex), alpha = .4, size = 1) +
+  geom_smooth(aes(color = sex), se = FALSE) +
+  facet_grid(~education) +
+  scale_x_continuous(
+    breaks = c(0, 6, 12, 18, 24),
+    limits = c(0, 24)) +
+  scale_y_continuous(
+    limits = c(0, 2000))  +
+  labs(
+    title = "24-hour activity by education level and sex",
+    x = "Hour of the day",
+    y = "Total activity per hour (MIMS)",
+    color = "Sex", 
+    caption = "Hour 0 = midnight")
+```
+
+Both sexes followed a similar daily pattern across all three education groups. Activity was lowest overnight (hours 2-5, or 2-5am), rose sharply between hours 5 and 10 (5-10am), stayed high from about hour 10 to 19 (10am-7pm), and declined from hour 19 to 24 (7pm-midnight). In the less than high school group, activity peaked around hours 10–11 (10-11am), and men and women had nearly identical patterns. In the other two groups, activity stayed fairly level through the day, and women were slightly more active than men, with the largest difference in the more than high school group. Overall, daily activity patterns were similar across groups, with sex differences becoming more noticeable at higher education levels.
+
 
 
