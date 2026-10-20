@@ -287,7 +287,7 @@ Both sexes followed a similar daily pattern across all three education groups. A
 
 ## Problem 3
 
-Import data 
+Import, clean and merge data 
 
 ```{r, message = FALSE}
 jan_2020_citi = 
@@ -315,7 +315,8 @@ citi_df =
   mutate(
     year = factor(year),
     month = factor(month, levels = c("January", "July")),
-    weekdays = factor(weekdays, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"),
+    weekdays = factor(weekdays, levels = c("Monday", "Tuesday", "Wednesday", "Thursday", 
+                                           "Friday", "Saturday", "Sunday"),
                       labels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")),
     rideable_type = factor(rideable_type),
     member_casual = factor(member_casual)
